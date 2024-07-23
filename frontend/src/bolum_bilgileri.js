@@ -39,107 +39,62 @@ import {
   InputRightAddon,
 } from "@chakra-ui/react";
 import { Button, ButtonGroup } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
-const envanter_listesi = [
-  [1, "Ağrı Kesici", 70, 1, 0],
-  [2, "Plaster", 100, 0, 0],
-  [3, "Serum", 150, 1, 0],
-];
-
-const EnvanterGoruntuleme = () => {
-  const [envanterListesi, setEnvanterListesi] = useState([]);
-  const [malzemeId, setMalzemeId] = useState();
-  const [malzemeAdi, setMalzemeAdi] = useState();
-  const [stokMiktari, setStokMiktari] = useState();
-  const [siparisMiktari, setSiparisMiktari] = useState();
-  const [siparisDurumu, setSiparisDurumu] = useState();
-  const [siparisListesi, setSiparisListesi] = useState([]);
-
-  function envanter_getir() {
+const BolumBilgileri = () => {
+  function bolum_listesi_getir() {
     axios
-      .post("http://localhost:8080/envanter_getir")
+      .post("http://localhost:8080/bolum_listesi_getir")
       .then((response) => {
         console.log(response.data);
-        setEnvanterListesi(response.data);
+        setBolumListesi(response.data);
       })
       .catch((error) => {
         console.error("Error sending data: ", error);
       });
   }
 
-  function envanter_filtrele() {
+  function bolum_ada_gore_sirala() {
+    console.log("hereee");
     axios
-      .post("http://localhost:8080/envanter_filtrele", {
-        malzemeId: malzemeId,
-        malzemeAdi: malzemeAdi,
-        stokMiktari: stokMiktari,
-        siparisDurumu: siparisDurumu,
-      })
+      .post("http://localhost:8080/bolum_ada_gore_sirala")
       .then((response) => {
         console.log(response.data);
-        setEnvanterListesi(response.data);
+        setBolumListesi(response.data);
       })
       .catch((error) => {
         console.error("Error sending data: ", error);
       });
   }
 
-  function envanter_ada_gore_sirala() {
+  function bolum_yatak_gore_sirala() {
     axios
-      .post("http://localhost:8080/envanter_ada_gore_sirala", {})
+      .post("http://localhost:8080/bolum_yatak_gore_sirala")
       .then((response) => {
         console.log(response.data);
-        setEnvanterListesi(response.data);
+        setBolumListesi(response.data);
       })
       .catch((error) => {
         console.error("Error sending data: ", error);
       });
   }
 
-  function stok_miktari_gore_sirala() {
+  function bolum_hasta_gore_sirala() {
     axios
-      .post("http://localhost:8080/stok_miktari_gore_sirala", {})
+      .post("http://localhost:8080/bolum_hasta_gore_sirala")
       .then((response) => {
         console.log(response.data);
-        setEnvanterListesi(response.data);
+        setBolumListesi(response.data);
       })
       .catch((error) => {
         console.error("Error sending data: ", error);
       });
   }
 
-  function siparis_ver(malzemeId) {
-    const currentDate = new Date();
-    const day = currentDate.getDate();
-    const month = currentDate.getMonth() + 1;
-    const year = currentDate.getFullYear();
-    axios
-      .post("http://localhost:8080/siparis_ver", {
-        malzemeId: malzemeId,
-        tarih: year + "-" + month + "-" + day,
-        siparisMiktari: siparisMiktari,
-      })
-      .then((response) => {
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.error("Error sending data: ", error);
-      });
-  }
-
-  function siparis_listesi_getir() {
-    axios
-      .post("http://localhost:8080/siparis_listesi_getir")
-      .then((response) => {
-        console.log(response.data);
-        setSiparisListesi(response.data);
-      })
-      .catch((error) => {
-        console.error("Error sending data: ", error);
-      });
-  }
+  const [bolumId, setBolumId] = useState();
+  const [ad, setAd] = useState();
+  const [bolumListesi, setBolumListesi] = useState([]);
 
   return (
     <ChakraProvider>
@@ -276,10 +231,15 @@ const EnvanterGoruntuleme = () => {
                 </AccordionItem>
               </Accordion>
               <Stack spacing={4} direction="column">
+                <Button
+                  colorScheme="blue"
+                  size="sm"
+                  w="35%"
+                  onClick={bolum_listesi_getir}
+                >
+                  Bölüm Bilgilerini Getir
+                </Button>
                 <Stack w="15%">
-                  <Button colorScheme="blue" size="sm" onClick={envanter_getir}>
-                    Envanteri Getir
-                  </Button>
                   <Menu>
                     <MenuButton
                       as={Button}
@@ -290,154 +250,29 @@ const EnvanterGoruntuleme = () => {
                       Sırala
                     </MenuButton>
                     <MenuList>
-                      <MenuItem onClick={stok_miktari_gore_sirala}>
-                        Stok Miktarı
+                      <MenuItem onClick={bolum_ada_gore_sirala}>Ad</MenuItem>
+                      <MenuItem onClick={bolum_hasta_gore_sirala}>
+                        Hasta Sayısı
                       </MenuItem>
-                      <MenuItem onClick={envanter_ada_gore_sirala}>
-                        Malzeme Adı
+                      <MenuItem onClick={bolum_yatak_gore_sirala}>
+                        Yatak Sayısı
                       </MenuItem>
                     </MenuList>
                   </Menu>
-                  <Box
-                    as="button"
-                    borderRadius="md"
-                    bg="#38A169"
-                    color="white"
-                    px={4}
-                    h={8}
-                  >
-                    Filtrele
-                  </Box>
                 </Stack>
-                <Stack>
-                  <Stack spacing={4} direction="row">
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Malzeme ID</InputLeftAddon>
-                      <Input
-                        onChange={(event) => {
-                          setMalzemeId(event.target.value);
-                        }}
-                      ></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Malzeme Adı</InputLeftAddon>
-                      <Input
-                        onChange={(event) => {
-                          setMalzemeAdi(event.target.value);
-                        }}
-                      ></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Stok Miktarı</InputLeftAddon>
-                      <Input
-                        onChange={(event) => {
-                          setStokMiktari(event.target.value);
-                        }}
-                      ></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Sipariş Durumu</InputLeftAddon>
-                      <Input
-                        onChange={(event) => {
-                          setSiparisDurumu(event.target.value);
-                        }}
-                      ></Input>
-                    </InputGroup>
-                  </Stack>
-                </Stack>
-                <Button
-                  colorScheme="teal"
-                  size="sm"
-                  w="10%"
-                  onClick={envanter_filtrele}
-                >
-                  Getir
-                </Button>
-                <TableContainer>
-                  <Table variant="simple">
-                    <Thead>
-                      <Tr>
-                        <Th>Malzeme ID</Th>
-                        <Th>Malzeme Adı</Th>
-                        <Th>Stok Miktarı</Th>
-                        <Th>Sipariş Durumu</Th>
-
-                        <Th></Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {envanterListesi.map((tuple) => {
-                        return (
-                          <Tr>
-                            {tuple != null
-                              ? Object.values(tuple).map((element) => {
-                                  return <Td>{element}</Td>;
-                                })
-                              : null}
-                            {tuple != null ? (
-                              tuple.Siparis_Durumu == 1 ? (
-                                <Menu>
-                                  <MenuButton
-                                    as={Button}
-                                    rightIcon={<ChevronDownIcon />}
-                                    colorScheme="green"
-                                    size="sm"
-                                  >
-                                    Sipariş Ver
-                                  </MenuButton>
-                                  <MenuList>
-                                    <InputGroup paddingX="2" w="75%" size="sm">
-                                      <InputLeftAddon>Miktar:</InputLeftAddon>
-                                      <Input
-                                        onChange={(event) =>
-                                          setSiparisMiktari(event.target.value)
-                                        }
-                                      ></Input>
-                                    </InputGroup>
-                                    <Stack paddingX="2" paddingY="2">
-                                      <Button
-                                        colorScheme="blue"
-                                        size="sm"
-                                        w="25%"
-                                        onClick={siparis_ver(tuple.Malzeme_ID)}
-                                      >
-                                        Onayla
-                                      </Button>
-                                    </Stack>
-                                  </MenuList>
-                                </Menu>
-                              ) : null
-                            ) : null}
-                          </Tr>
-                        );
-                      })}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
                 <br></br>
-                <Button
-                  colorScheme="blue"
-                  size="sm"
-                  onClick={siparis_listesi_getir}
-                  w="20%"
-                >
-                  Sipariş Listesini Getir
-                </Button>
                 <TableContainer>
                   <Table variant="simple">
                     <Thead>
                       <Tr>
-                        <Th>Malzeme ID</Th>
-                        <Th>Malzeme Adı</Th>
-                        <Th>Stok Miktarı</Th>
-                        <Th>Sipariş Miktarı</Th>
-                        <Th>Tarih</Th>
-
+                        <Th>Bolum Adı</Th>
+                        <Th>Yatak Sayısı</Th>
+                        <Th>Yatan Hasta Sayısı</Th>
                         <Th></Th>
                       </Tr>
                     </Thead>
                     <Tbody>
-                      {siparisListesi.map((tuple) => {
+                      {bolumListesi.map((tuple) => {
                         return (
                           <Tr>
                             {tuple != null
@@ -463,4 +298,4 @@ const EnvanterGoruntuleme = () => {
   );
 };
 
-export default EnvanterGoruntuleme;
+export default BolumBilgileri;

@@ -41,16 +41,39 @@ import { Button, ButtonGroup } from "@chakra-ui/react";
 import { useState } from "react";
 import axios from "axios";
 
-const doktor_listesi = [
-  [1, "Başak", "Güney", "tel1", "Adres1", "Nöroloji", "10.30-16.30"],
-  [2, "Ali", "Kaya", "tel2", "Adres2", "Psikoloji", "10.30-17.30"],
-];
-
 const DoktorGuncelleme = () => {
   const [personelId, setPersonelId] = useState();
-  const [randevuTakvimi, setRandevuTakvimi] = useState([]);
+  const [doktor, setDoktor] = useState([]);
+  const [tel, setTel] = useState();
+  const [uzmanlik, setUzmanlik] = useState();
+  const [saat, setSaat] = useState();
+  const [came, setCame] = useState(false);
 
-  const doktor_randevu_getir = (personelId) => {};
+  function doktor_getir() {
+    axios
+      .post("http://localhost:8080/doktor_getir", { personelId: personelId })
+      .then((response) => {
+        console.log(response.data);
+        setDoktor(response.data);
+        setCame(true);
+      })
+      .catch((error) => {
+        console.error("Error sending data: ", error);
+      });
+  }
+
+  function doktor_guncelle() {
+    axios
+      .post("http://localhost:8080/doktor_guncelle", {
+        personelId: personelId,
+        uzmanlik: uzmanlik,
+        saat: saat,
+      })
+      .then((response) => {})
+      .catch((error) => {
+        console.error("Error sending data: ", error);
+      });
+  }
 
   const handlePersonelIdChange = (event) => {
     setPersonelId(event.target.value);
@@ -160,10 +183,10 @@ const DoktorGuncelleme = () => {
                       </AccordionPanel>
                       <AccordionPanel pb={4}>
                         <a
-                          href="/diger_bilgi_guncelleme"
+                          href="/hasta_guncelleme"
                           style={{ "text-decoration": "underline" }}
                         >
-                          Diğer
+                          Hasta
                         </a>
                       </AccordionPanel>
                     </AccordionItem>
@@ -181,78 +204,31 @@ const DoktorGuncelleme = () => {
                       <AccordionIcon />
                     </AccordionButton>
                   </h2>
-                  <AccordionPanel pb={4}></AccordionPanel>
+                  <AccordionPanel pb={4}>
+                    <a
+                      href="/bolum_bilgileri"
+                      style={{ "text-decoration": "underline" }}
+                    >
+                      Bölüm Bilgileri
+                    </a>
+                  </AccordionPanel>
                 </AccordionItem>
               </Accordion>
               <Stack spacing={4} direction="column">
-                <Stack w="15%">
-                  <Menu>
-                    <MenuButton
-                      as={Button}
-                      rightIcon={<ChevronDownIcon />}
-                      size="sm"
-                      colorScheme="green"
-                    >
-                      Sırala
-                    </MenuButton>
-                    <MenuList>
-                      <MenuItem>Ad</MenuItem>
-                      <MenuItem>Tarih</MenuItem>
-                      <MenuItem>Tutar</MenuItem>
-                    </MenuList>
-                  </Menu>
-                  <Box
-                    as="button"
-                    borderRadius="md"
-                    bg="#38A169"
-                    color="white"
-                    px={4}
-                    h={8}
+                <Stack spacing={4} direction="row" w="50%">
+                  <InputGroup size="sm">
+                    <InputLeftAddon>Personel ID</InputLeftAddon>
+                    <Input onChange={handlePersonelIdChange}></Input>
+                  </InputGroup>
+                  <Button
+                    colorScheme="teal"
+                    size="sm"
+                    w="25%"
+                    onClick={doktor_getir}
                   >
-                    Filtrele
-                  </Box>
+                    Getir
+                  </Button>
                 </Stack>
-                <Stack>
-                  <Stack spacing={4} direction="row">
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Fatura ID</InputLeftAddon>
-                      <Input onChange={handlePersonelIdChange}></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Hasta ID</InputLeftAddon>
-                      <Input onChange={handlePersonelIdChange}></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Ad</InputLeftAddon>
-                      <Input onChange={handlePersonelIdChange}></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Soyad</InputLeftAddon>
-                      <Input onChange={handlePersonelIdChange}></Input>
-                    </InputGroup>
-                  </Stack>
-                  <Stack spacing={4} direction="row">
-                    <InputGroup size="sm">
-                      <InputLeftAddon>TCNO</InputLeftAddon>
-                      <Input onChange={handlePersonelIdChange}></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Sigorta Bilgisi</InputLeftAddon>
-                      <Input onChange={handlePersonelIdChange}></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Tarih</InputLeftAddon>
-                      <Input onChange={handlePersonelIdChange}></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Tutar</InputLeftAddon>
-                      <Input onChange={handlePersonelIdChange}></Input>
-                    </InputGroup>
-                  </Stack>
-                </Stack>
-                <Button colorScheme="teal" size="sm" w="10%">
-                  Getir
-                </Button>
                 <br></br>
                 <TableContainer>
                   <Table variant="simple">
@@ -261,32 +237,74 @@ const DoktorGuncelleme = () => {
                         <Th>Personal ID</Th>
                         <Th>Ad</Th>
                         <Th>Soyad</Th>
-                        <Th>Telefon</Th>
-                        <Th>Adres</Th>
+                        <Th>İletişim</Th>
                         <Th>Uzmanlık Alanı</Th>
                         <Th>Çalışma Saati</Th>
                         <Th></Th>
                       </Tr>
                     </Thead>
                     <Tbody>
-                      {doktor_listesi.map((tuple) => {
-                        return (
-                          <Tr>
-                            {tuple != null
-                              ? tuple.map((element) => {
+                      {came ? (
+                        <Tr>
+                          {doktor != null
+                            ? Object.values(doktor[0]).map((element, i) => {
+                                // Log the type and value of the element
+                                console.log(
+                                  "Element type:",
+                                  typeof element,
+                                  "Value:",
+                                  element
+                                );
+
+                                if (i === 0 || i === 1 || i === 2 || i === 3) {
+                                  // Ensure the element is a valid React child
+                                  if (
+                                    typeof element === "string" ||
+                                    typeof element === "number"
+                                  ) {
+                                    return <Td key={i}>{element}</Td>;
+                                  } else {
+                                    return <Td key={i}>Invalid Value</Td>;
+                                  }
+                                } else if (i === 4) {
                                   return (
-                                    <Td>
-                                      <Input placeholder={element} size="sm" />
+                                    <Td key={i}>
+                                      <Input
+                                        placeholder={String(element)} // Ensure placeholder is a string
+                                        size="sm"
+                                        onChange={(event) =>
+                                          setUzmanlik(event.target.value)
+                                        }
+                                      />
                                     </Td>
                                   );
-                                })
-                              : null}
-                            <Button colorScheme="blue" size="sm">
-                              Güncelle
-                            </Button>
-                          </Tr>
-                        );
-                      })}
+                                } else if (i === 5) {
+                                  return (
+                                    <Td key={i}>
+                                      <Input
+                                        placeholder={String(element)} // Ensure placeholder is a string
+                                        size="sm"
+                                        onChange={(event) =>
+                                          setSaat(event.target.value)
+                                        }
+                                      />
+                                    </Td>
+                                  );
+                                }
+                              })
+                            : null}
+
+                          <Button
+                            colorScheme="blue"
+                            size="sm"
+                            onClick={() => {
+                              doktor_guncelle();
+                            }}
+                          >
+                            Güncelle
+                          </Button>
+                        </Tr>
+                      ) : null}
                     </Tbody>
                   </Table>
                 </TableContainer>

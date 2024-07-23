@@ -258,10 +258,10 @@ const RandevuTakvimi = () => {
                       </AccordionPanel>
                       <AccordionPanel pb={4}>
                         <a
-                          href="/diger_bilgi_guncelleme"
+                          href="/hasta_guncelleme"
                           style={{ "text-decoration": "underline" }}
                         >
-                          Diğer
+                          Hasta
                         </a>
                       </AccordionPanel>
                     </AccordionItem>
@@ -279,7 +279,14 @@ const RandevuTakvimi = () => {
                       <AccordionIcon />
                     </AccordionButton>
                   </h2>
-                  <AccordionPanel pb={4}></AccordionPanel>
+                  <AccordionPanel pb={4}>
+                    <a
+                      href="/bolum_bilgileri"
+                      style={{ "text-decoration": "underline" }}
+                    >
+                      Bölüm Bilgileri
+                    </a>
+                  </AccordionPanel>
                 </AccordionItem>
               </Accordion>
               <Stack spacing={4} direction="column">

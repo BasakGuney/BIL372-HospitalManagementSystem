@@ -12,6 +12,8 @@ import HastaAtamasi from "./hasta_atamasi";
 import EnvanterGoruntuleme from "./envanter_goruntuleme";
 import Faturalandirma from "./faturalandirma";
 import DoktorGuncelleme from "./doktor_guncelleme";
+import HastaGuncelleme from "./hasta_guncelleme";
+import BolumBilgileri from "./bolum_bilgileri";
 function App() {
   return (
     <>
@@ -31,6 +33,12 @@ function App() {
           </Route>
           <Route exact path="/doktor_bilgi_guncelleme">
             <DoktorGuncelleme></DoktorGuncelleme>
+          </Route>
+          <Route exact path="/hasta_guncelleme">
+            <HastaGuncelleme></HastaGuncelleme>
+          </Route>
+          <Route exact path="/bolum_bilgileri">
+            <BolumBilgileri></BolumBilgileri>
           </Route>
           <Route>
             <MainPage></MainPage>
