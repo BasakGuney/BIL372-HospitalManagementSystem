@@ -40,6 +40,7 @@ import {
 import { Button, ButtonGroup } from "@chakra-ui/react";
 import { useState } from "react";
 import axios from "axios";
+import HastaSistemi from "./hasta_sistemi";
 
 const DoktorGuncelleme = () => {
   const [personelId, setPersonelId] = useState();
@@ -312,7 +313,7 @@ const DoktorGuncelleme = () => {
             </Stack>
           </TabPanel>
           <TabPanel>
-            <p>two!</p>
+            <HastaSistemi></HastaSistemi>
           </TabPanel>
         </TabPanels>
       </Tabs>

@@ -41,6 +41,7 @@ import {
 import { Button, ButtonGroup } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import HastaSistemi from "./hasta_sistemi";
 
 const BolumBilgileri = () => {
   function bolum_listesi_getir() {
@@ -290,7 +291,7 @@ const BolumBilgileri = () => {
             </Stack>
           </TabPanel>
           <TabPanel>
-            <p>two!</p>
+            <HastaSistemi></HastaSistemi>
           </TabPanel>
         </TabPanels>
       </Tabs>

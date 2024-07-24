@@ -41,6 +41,7 @@ import {
 import { Button, ButtonGroup } from "@chakra-ui/react";
 import { useState } from "react";
 import axios from "axios";
+import HastaSistemi from "./hasta_sistemi";
 
 const Faturalandirma = () => {
   const [personelId, setPersonelId] = useState();
@@ -397,8 +398,18 @@ const Faturalandirma = () => {
                         return (
                           <Tr>
                             {tuple != null
-                              ? Object.values(tuple).map((element) => {
-                                  return <Td>{element}</Td>;
+                              ? Object.values(tuple).map((element, index) => {
+                                  if (index == 6)
+                                    return (
+                                      <Td>
+                                        {
+                                          ("" + element)
+                                            .toString()
+                                            .split("T")[0]
+                                        }
+                                      </Td>
+                                    );
+                                  else return <Td>{element}</Td>;
                                 })
                               : null}
                           </Tr>
@@ -419,7 +430,7 @@ const Faturalandirma = () => {
             </Stack>
           </TabPanel>
           <TabPanel>
-            <p>two!</p>
+            <HastaSistemi></HastaSistemi>
           </TabPanel>
         </TabPanels>
       </Tabs>

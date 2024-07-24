@@ -20,7 +20,7 @@ app.use(express.json());
 
 app.post("/personeli_getir", (req, res) => {
   con.query(
-    "SELECT Hasta_ID, TCNO, Ad, Soyad, Sigorta_Bilgisi, Kayit_No,Tarih,Saat,Gecerli_mi FROM hasta NATURAL JOIN randevu WHERE DoktorID=?",
+    "SELECT Hasta_ID, TCNO, Ad, Soyad, Sigorta_Bilgisi, Tarih,Saat,Gecerli_mi FROM hasta NATURAL JOIN randevu WHERE DoktorID=?",
     [req.body.personelId],
     function (err, result) {
       if (err) throw err;
@@ -264,13 +264,14 @@ app.post("/envanter_filtrele", (req, res) => {
 
 app.post("/siparis_ver", (req, res) => {
   const filters = {
-    malzemeId: req.body.malzemeId,
-    tarih: req.body.tarih,
     siparisMiktari: req.body.siparisMiktari,
+    tarih: req.body.tarih,
+    malzemeId: req.body.malzemeId,
   };
 
   // Base query
-  let query = "INSERT INTO siparis values(?,?,?) ";
+  let query =
+    "UPDATE siparis SET Siparis_Miktari=? WHERE Tarih=? AND Malzeme_ID=?";
   let queryParams = [];
 
   // Add dynamic conditions based on provided filters
@@ -289,7 +290,7 @@ app.post("/siparis_ver", (req, res) => {
 
 app.post("/siparis_listesi_getir", (req, res) => {
   con.query(
-    "select Malzeme_ID, Malzeme_Adi, Stok_Miktari, Siparis_Miktari,Tarih from siparis natural join envanter ",
+    "select envanter.Malzeme_ID, envanter.Malzeme_Adi, envanter.Stok_Miktari, Siparis_Miktari,Tarih from siparis join envanter where siparis.Malzeme_ID=envanter.Malzeme_ID",
     function (err, result) {
       if (err) throw err;
       res.send(result);
@@ -310,7 +311,7 @@ app.post("/fatura_listesi_getir", (req, res) => {
 
 app.post("/guncel_tutar_hesapla", (req, res) => {
   con.query(
-    "select Fatura_ID, Hasta_ID,Ad,Soyad,TCNO,Sigorta_Bilgisi,Tarih,Tutar,CASE WHEN Sigorta_Bilgisi='yok' THEN Tutar WHEN Sigorta_Bilgisi=1 THEN Tutar-100 ELSE NULL END as Guncel_Tutar from fatura join hasta where Hasta_ID=Customer_ID",
+    "select Fatura_ID, Hasta_ID,Ad,Soyad,TCNO,Sigorta_Bilgisi,Tarih,Tutar,CASE WHEN Sigorta_Bilgisi='yok' THEN Tutar WHEN Sigorta_Bilgisi=1 THEN Tutar*0.8 ELSE NULL END as Guncel_Tutar from fatura join hasta where Hasta_ID=Customer_ID",
     function (err, result) {
       console.log(result);
       if (err) throw err;
@@ -512,6 +513,145 @@ app.post("/bolum_yatak_gore_sirala", (req, res) => {
     function (err, result) {
       if (err) throw err;
       res.send(result);
+    }
+  );
+});
+
+app.post("/randevu_getir", (req, res) => {
+  con.query(
+    "SELECT hasta.Hasta_ID,DoktorID,personel.Ad,personel.Soyad,doktor.Uzmanlik_Alani,Iletisim, Tarih,Saat from randevu join hasta on hasta.Hasta_ID=randevu.Hasta_ID join personel on personel.Personel_ID = DoktorID join doktor on doktor.Personel_ID = DoktorID where TCNO=?",
+    [req.body.TCNO],
+    function (err, result) {
+      if (err) throw err;
+      res.send(result);
+    }
+  );
+});
+
+app.post("/hasta_randevu_iptali", (req, res) => {
+  const { doktorId, hastaId, tarih, saat } = req.body;
+
+  // First query to delete the record
+  const deleteQuery =
+    "DELETE FROM randevu WHERE DoktorID = ? AND Hasta_ID = ? AND Tarih=? AND Saat=?";
+  const deleteParams = [doktorId, hastaId, tarih, saat];
+
+  // Second query to select the records
+  const selectQuery = `
+    SELECT hasta.Hasta_ID,DoktorID,personel.Ad,personel.Soyad,doktor.Uzmanlik_Alani,Iletisim, Tarih,Saat from randevu join hasta on hasta.Hasta_ID=randevu.Hasta_ID join personel on personel.Personel_ID = DoktorID join doktor on doktor.Personel_ID = DoktorID where Hasta_ID=?
+  `;
+  const selectParams = [hastaId];
+
+  // Execute the delete query first
+  con.query(deleteQuery, deleteParams, function (err, deleteResult) {
+    if (err) {
+      console.error("Database query failed:", err);
+      return res.status(500).send({ error: "Database query failed" });
+    }
+
+    // Execute the select query next
+    con.query(selectQuery, selectParams, function (err, selectResult) {
+      if (err) {
+        console.error("Database query failed:", err);
+        return res.status(500).send({ error: "Database query failed" });
+      }
+
+      // Send the result of the SELECT query
+      res.send(selectResult);
+    });
+  });
+});
+
+app.post("/hasta_randevu_tarihe_gore_sirala", (req, res) => {
+  con.query(
+    "SELECT hasta.Hasta_ID,DoktorID,personel.Ad,personel.Soyad,doktor.Uzmanlik_Alani,Iletisim, Tarih,Saat from randevu join hasta on hasta.Hasta_ID=randevu.Hasta_ID join personel on personel.Personel_ID = DoktorID join doktor on doktor.Personel_ID = DoktorID where TCNO=? ORDER BY Tarih",
+    [req.body.TCNO],
+    function (err, result) {
+      if (err) throw err;
+      res.send(result);
+    }
+  );
+});
+
+app.post("/hasta_randevu_SAATE_gore_sirala", (req, res) => {
+  con.query(
+    "SELECT hasta.Hasta_ID,DoktorID,personel.Ad,personel.Soyad,doktor.Uzmanlik_Alani,Iletisim, Tarih,Saat from randevu join hasta on hasta.Hasta_ID=randevu.Hasta_ID join personel on personel.Personel_ID = DoktorID join doktor on doktor.Personel_ID = DoktorID where TCNO=? ORDER BY Saat",
+    [req.body.TCNO],
+    function (err, result) {
+      if (err) throw err;
+      res.send(result);
+    }
+  );
+});
+
+app.post("/faturalari_getir", (req, res) => {
+  con.query(
+    "select Tarih,CASE WHEN Sigorta_Bilgisi='yok' THEN Tutar WHEN Sigorta_Bilgisi=1 THEN Tutar*0.8 ELSE NULL END as Guncel_Tutar  from fatura join hasta on hasta.Hasta_ID=fatura.Customer_ID where TCNO=?",
+    [req.body.TCNO],
+    function (err, result) {
+      if (err) throw err;
+      res.send(result);
+    }
+  );
+});
+
+app.post("/randevu_saat_getir", (req, res) => {
+  con.query(
+    "select Doktor_ID, personel.Ad,personel.Soyad,doktor.bolum,personel.Iletisim, Saat from randevu_saatleri join personel on personel.Personel_ID=randevu_saatleri.Doktor_ID join doktor on doktor.Personel_ID=personel.Personel_ID where doktor.bolum=?",
+    [req.body.bolum],
+    function (err, result) {
+      if (err) throw err;
+      res.send(result);
+    }
+  );
+});
+
+app.post("/hasta_kaydet", (req, res) => {
+  let queryParams = [
+    req.body.TCNO,
+    req.body.ad,
+    req.body.soyad,
+    req.body.sigorta,
+  ];
+  con.query(
+    "INSERT INTO hasta  (TCNO, Ad, Soyad, Sigorta_Bilgisi) VALUES(?,?,?,?)",
+    queryParams,
+    function (err, result) {
+      if (err) throw err;
+    }
+  );
+  con.query(
+    "SELECT Hasta_ID FROM hasta  WHERE TCNO=?",
+    [req.body.TCNO],
+    function (err, result) {
+      if (err) throw err;
+      res.send(result);
+    }
+  );
+});
+
+app.post("/hasta_randevu_olustur", (req, res) => {
+  console.log(req.body.hastaId);
+  let queryParams1 = [req.body.doktorId, req.body.saat];
+  let queryParams2 = [
+    req.body.doktorId,
+    req.body.hastaId,
+    req.body.tarih,
+    req.body.saat,
+    req.body.gecerli,
+  ];
+  con.query(
+    "DELETE FROM randevu_saatleri WHERE Doktor_ID=? AND Saat=?",
+    queryParams1,
+    function (err, result) {
+      if (err) throw err;
+    }
+  );
+  con.query(
+    "INSERT INTO randevu VALUES(?,?,?,?,?)",
+    queryParams2,
+    function (err, result) {
+      if (err) throw err;
     }
   );
 });

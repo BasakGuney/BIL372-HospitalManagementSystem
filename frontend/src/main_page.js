@@ -24,6 +24,7 @@ import {
   InputRightAddon,
 } from "@chakra-ui/react";
 import { Button, ButtonGroup } from "@chakra-ui/react";
+import HastaSistemi from "./hasta_sistemi";
 
 const MainPage = () => {
   return (
@@ -163,7 +164,7 @@ const MainPage = () => {
             </Stack>
           </TabPanel>
           <TabPanel>
-            <p>two!</p>
+            <HastaSistemi></HastaSistemi>
           </TabPanel>
         </TabPanels>
       </Tabs>

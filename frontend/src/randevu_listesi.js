@@ -39,113 +39,96 @@ import {
   InputRightAddon,
 } from "@chakra-ui/react";
 import { Button, ButtonGroup } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import HastaSistemi from "./hasta_sistemi";
+import MainPage from "./main_page";
 
-const envanter_listesi = [
-  [1, "Ağrı Kesici", 70, 1, 0],
-  [2, "Plaster", 100, 0, 0],
-  [3, "Serum", 150, 1, 0],
+const randevu_listesi = [
+  [1, 123, "Başak", "Güney", "345", "yok", "13.10.2024", "14.30"],
+  [2, 234, "Ali", "Kaya", "456", "yok", "12.10.2024", "12.30"],
 ];
 
-const EnvanterGoruntuleme = () => {
-  const [envanterListesi, setEnvanterListesi] = useState([]);
-  const [malzemeId, setMalzemeId] = useState();
-  const [malzemeAdi, setMalzemeAdi] = useState();
-  const [stokMiktari, setStokMiktari] = useState();
-  const [siparisMalzemeId, setSiparisMalzemeId] = useState();
-  const [siparisMiktari, setSiparisMiktari] = useState();
-  const [siparisDurumu, setSiparisDurumu] = useState();
-  const [siparisListesi, setSiparisListesi] = useState([]);
+const RandevuListesi = () => {
+  const [TCNO, setTCNO] = useState();
+  const [randevuListesi, setRandevuListesi] = useState([]);
 
-  function envanter_getir() {
+  function randevu_getir() {
     axios
-      .post("http://localhost:8080/envanter_getir")
+      .post("http://localhost:8080/randevu_getir", { TCNO: TCNO })
       .then((response) => {
         console.log(response.data);
-        setEnvanterListesi(response.data);
+        setRandevuListesi(response.data);
       })
       .catch((error) => {
         console.error("Error sending data: ", error);
       });
   }
 
-  function envanter_filtrele() {
+  function hasta_randevu_tarihe_gore_sirala() {
+    console.log("hereee");
     axios
-      .post("http://localhost:8080/envanter_filtrele", {
-        malzemeId: malzemeId,
-        malzemeAdi: malzemeAdi,
-        stokMiktari: stokMiktari,
-        siparisDurumu: siparisDurumu,
+      .post("http://localhost:8080/hasta_randevu_tarihe_gore_sirala", {
+        TCNO: TCNO,
       })
       .then((response) => {
         console.log(response.data);
-        setEnvanterListesi(response.data);
+        setRandevuListesi(response.data);
       })
       .catch((error) => {
         console.error("Error sending data: ", error);
       });
   }
 
-  function envanter_ada_gore_sirala() {
+  function hasta_randevu_saate_gore_sirala() {
     axios
-      .post("http://localhost:8080/envanter_ada_gore_sirala", {})
+      .post("http://localhost:8080/hasta_randevu_saate_gore_sirala", {
+        TCNO: TCNO,
+      })
       .then((response) => {
         console.log(response.data);
-        setEnvanterListesi(response.data);
+        setRandevuListesi(response.data);
       })
       .catch((error) => {
         console.error("Error sending data: ", error);
       });
   }
 
-  function stok_miktari_gore_sirala() {
+  function hasta_randevu_iptali(doktorId, hastaId, tarih, saat) {
     axios
-      .post("http://localhost:8080/stok_miktari_gore_sirala", {})
+      .post("http://localhost:8080/hasta_randevu_iptali", {
+        doktorId: doktorId,
+        hastaId: hastaId,
+        tarih: tarih,
+        saat: saat,
+      })
       .then((response) => {
         console.log(response.data);
-        setEnvanterListesi(response.data);
+        setRandevuListesi(response.data);
       })
       .catch((error) => {
         console.error("Error sending data: ", error);
       });
   }
 
-  function siparis_ver() {
-    const currentDate = new Date();
-    const day = currentDate.getDate();
-    const month = currentDate.getMonth() + 1;
-    const year = currentDate.getFullYear();
-    axios
-      .post("http://localhost:8080/siparis_ver", {
-        malzemeId: siparisMalzemeId,
-        tarih: year + "-" + month + "-" + day,
-        siparisMiktari: siparisMiktari,
-      })
-      .then((response) => {
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.error("Error sending data: ", error);
-      });
-  }
+  const [personelId, setPersonelId] = useState();
+  const [randevuTakvimi, setRandevuTakvimi] = useState([]);
+  const [chooseAd, setChooseAd] = useState();
+  const [chooseSoyad, setChooseSoyad] = useState();
+  const [chooseTarih, setChooseTarih] = useState();
+  const [chooseSaat, setChooseSaat] = useState();
+  const [chooseTCNO, setChooseTCNO] = useState();
+  const [chooseHastaId, setChooseHastaId] = useState();
+  const [chooseKayitNo, setChooseKayitNo] = useState();
+  const [chooseSigorta, setChooseSigorta] = useState();
 
-  function siparis_listesi_getir() {
-    axios
-      .post("http://localhost:8080/siparis_listesi_getir")
-      .then((response) => {
-        console.log(response.data);
-        setSiparisListesi(response.data);
-      })
-      .catch((error) => {
-        console.error("Error sending data: ", error);
-      });
-  }
+  const handlePersonelIdChange = (event) => {
+    setPersonelId(event.target.value);
+  };
 
   return (
     <ChakraProvider>
-      <Tabs>
+      <Tabs defaultIndex={1}>
         <TabList>
           <Tab>Yönetim Bilgi Sistemi</Tab>
           <Tab>Hasta Sistemi</Tab>
@@ -277,11 +260,69 @@ const EnvanterGoruntuleme = () => {
                   </AccordionPanel>
                 </AccordionItem>
               </Accordion>
+            </Stack>
+          </TabPanel>
+          <TabPanel>
+            <Stack spacing={8} direction="row">
+              <Accordion defaultIndex={[0]} allowMultiple w="25%">
+                <AccordionItem>
+                  <h2>
+                    <AccordionButton
+                      _expanded={{ bg: "#F56565", color: "white" }}
+                    >
+                      <Box as="span" flex="1" textAlign="left">
+                        İşlemler
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel pb={4}>
+                    <a
+                      href="/randevu_listesi"
+                      style={{ "text-decoration": "underline" }}
+                    >
+                      Randevu Listesi
+                    </a>
+                  </AccordionPanel>
+                  <AccordionPanel pb={4}>
+                    <a
+                      href="/randevu_olustur"
+                      style={{ "text-decoration": "underline" }}
+                    >
+                      Randevu Oluştur
+                    </a>
+                  </AccordionPanel>
+                  <AccordionPanel pb={4}>
+                    <a
+                      href="/hasta_fatura"
+                      style={{ "text-decoration": "underline" }}
+                    >
+                      Faturalar
+                    </a>
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
+
               <Stack spacing={4} direction="column">
-                <Stack w="15%">
-                  <Button colorScheme="blue" size="sm" onClick={envanter_getir}>
-                    Envanteri Getir
+                <Stack spacing={4} direction="row" w="50%">
+                  <InputGroup size="sm">
+                    <InputLeftAddon>TCNO</InputLeftAddon>
+                    <Input
+                      onChange={(event) => {
+                        setTCNO(event.target.value);
+                      }}
+                    ></Input>
+                  </InputGroup>
+                  <Button
+                    colorScheme="teal"
+                    size="sm"
+                    w="25%"
+                    onClick={randevu_getir}
+                  >
+                    Getir
                   </Button>
+                </Stack>
+                <Stack w="15%">
                   <Menu>
                     <MenuButton
                       as={Button}
@@ -292,125 +333,39 @@ const EnvanterGoruntuleme = () => {
                       Sırala
                     </MenuButton>
                     <MenuList>
-                      <MenuItem onClick={stok_miktari_gore_sirala}>
-                        Stok Miktarı
+                      <MenuItem onClick={hasta_randevu_tarihe_gore_sirala}>
+                        Tarih
                       </MenuItem>
-                      <MenuItem onClick={envanter_ada_gore_sirala}>
-                        Malzeme Adı
+                      <MenuItem onClick={hasta_randevu_saate_gore_sirala}>
+                        Saat
                       </MenuItem>
                     </MenuList>
                   </Menu>
-                  <Box
-                    as="button"
-                    borderRadius="md"
-                    bg="#38A169"
-                    color="white"
-                    px={4}
-                    h={8}
-                  >
-                    Filtrele
-                  </Box>
                 </Stack>
-                <Stack>
-                  <Stack spacing={4} direction="row">
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Malzeme ID</InputLeftAddon>
-                      <Input
-                        onChange={(event) => {
-                          setMalzemeId(event.target.value);
-                        }}
-                      ></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Malzeme Adı</InputLeftAddon>
-                      <Input
-                        onChange={(event) => {
-                          setMalzemeAdi(event.target.value);
-                        }}
-                      ></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Stok Miktarı</InputLeftAddon>
-                      <Input
-                        onChange={(event) => {
-                          setStokMiktari(event.target.value);
-                        }}
-                      ></Input>
-                    </InputGroup>
-                    <InputGroup size="sm">
-                      <InputLeftAddon>Sipariş Durumu</InputLeftAddon>
-                      <Input
-                        onChange={(event) => {
-                          setSiparisDurumu(event.target.value);
-                        }}
-                      ></Input>
-                    </InputGroup>
-                  </Stack>
-                </Stack>
-                <Button
-                  colorScheme="teal"
-                  size="sm"
-                  w="10%"
-                  onClick={envanter_filtrele}
-                >
-                  Getir
-                </Button>
-                <TableContainer>
-                  <Table variant="simple">
-                    <Thead>
-                      <Tr>
-                        <Th>Malzeme ID</Th>
-                        <Th>Malzeme Adı</Th>
-                        <Th>Stok Miktarı</Th>
-                        <Th>Sipariş Durumu</Th>
 
-                        <Th></Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {envanterListesi.map((tuple) => {
-                        return (
-                          <Tr>
-                            {tuple != null
-                              ? Object.values(tuple).map((element) => {
-                                  return <Td>{element}</Td>;
-                                })
-                              : null}
-                          </Tr>
-                        );
-                      })}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
                 <br></br>
-                <Button
-                  colorScheme="blue"
-                  size="sm"
-                  onClick={siparis_listesi_getir}
-                  w="20%"
-                >
-                  Sipariş Listesini Getir
-                </Button>
                 <TableContainer>
                   <Table variant="simple">
                     <Thead>
                       <Tr>
-                        <Th>Malzeme ID</Th>
-                        <Th>Malzeme Adı</Th>
-                        <Th>Stok Miktarı</Th>
-                        <Th>Sipariş Miktarı</Th>
+                        <Th>Hasta ID</Th>
+                        <Th>Doktor ID</Th>
+                        <Th>Doktor Adı</Th>
+                        <Th>Doktor Soyadı</Th>
+                        <Th>Uzmanlık</Th>
+                        <Th>İletişim</Th>
                         <Th>Tarih</Th>
-
+                        <Th>Saat</Th>
                         <Th></Th>
                       </Tr>
                     </Thead>
                     <Tbody>
-                      {siparisListesi.map((tuple) => {
+                      {randevuListesi.map((tuple) => {
                         return (
                           <Tr>
                             {tuple != null
                               ? Object.values(tuple).map((element, index) => {
-                                  if (index == 4)
+                                  if (index == 6)
                                     return (
                                       <Td>
                                         {
@@ -423,43 +378,27 @@ const EnvanterGoruntuleme = () => {
                                   else return <Td>{element}</Td>;
                                 })
                               : null}
+                            <Button
+                              colorScheme="red"
+                              onClick={(event) => {
+                                hasta_randevu_iptali(
+                                  tuple.DoktorID,
+                                  tuple.Hasta_ID,
+                                  tuple.Tarih,
+                                  tuple.Saat
+                                );
+                              }}
+                            >
+                              İptal Et
+                            </Button>
                           </Tr>
                         );
                       })}
                     </Tbody>
                   </Table>
                 </TableContainer>
-                <Stack spacing={4} direction="row">
-                  <InputGroup size="sm" w="25%">
-                    <InputLeftAddon>Malzeme ID</InputLeftAddon>
-                    <Input
-                      onChange={(event) => {
-                        setSiparisMalzemeId(event.target.value);
-                      }}
-                    ></Input>
-                  </InputGroup>
-                  <InputGroup size="sm" w="25%">
-                    <InputLeftAddon>Miktar</InputLeftAddon>
-                    <Input
-                      onChange={(event) => {
-                        setSiparisMiktari(event.target.value);
-                      }}
-                    ></Input>
-                  </InputGroup>
-                </Stack>
-                <Button
-                  colorScheme="green"
-                  size="sm"
-                  w="10%"
-                  onClick={siparis_ver}
-                >
-                  Sipariş Ver
-                </Button>
               </Stack>
             </Stack>
-          </TabPanel>
-          <TabPanel>
-            <HastaSistemi></HastaSistemi>
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -467,4 +406,4 @@ const EnvanterGoruntuleme = () => {
   );
 };
 
-export default EnvanterGoruntuleme;
+export default RandevuListesi;
